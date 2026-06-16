@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join COVE Network - Apply Today</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">COVE Network</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="directory.html">Directory</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="join.html" class="cta-btn">Join COVE</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Join COVE Network</h1>
+            <p>Apply to become part of our trusted community of business owners.</p>
+        </div>
+    </section>
+
+    <!-- Join Form Section -->
+    <section class="join-section">
+        <div class="container">
+            <div class="form-wrapper">
+                <h2>Apply to Join</h2>
+                <p>Tell us a bit about yourself and why you'd like to join COVE.</p>
+
+                <form id="joinForm" class="join-form">
+                    <div class="form-group">
+                        <label for="name">Your Name *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="businessName">Business Name *</label>
+                        <input type="text" id="businessName" name="businessName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="industry">Industry *</label>
+                        <select id="industry" name="industry" required>
+                            <option value="">Select an industry</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Design">Design</option>
+                            <option value="Consulting">Consulting</option>
+                            <option value="Tech">Tech</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Coaching">Coaching</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="website">Website</label>
+                        <input type="url" id="website" name="website" placeholder="https://example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" placeholder="City, Country">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Tell us about your business (1-2 lines) *</label>
+                        <textarea id="description" name="description" rows="3" required placeholder="What does your business do?"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="whyJoin">Why do you want to join COVE? *</label>
+                        <textarea id="whyJoin" name="whyJoin" rows="4" required placeholder="Share your thoughts..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                </form>
+
+                <div id="successMessage" class="success-message" style="display:none;">
+                    <h3>✓ Thank you for applying!</h3>
+                    <p>We've received your application. Our team will review it and get back to you soon.</p>
+                    <p>In the meantime, feel free to explore our member directory.</p>
+                    <a href="directory.html" class="btn btn-secondary">View Directory</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 COVE Network. All rights reserved.</p>
+            <p>A community for business owners. By business owners. Built on trust.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        const AIRTABLE_BASE_ID = 'YOUR_BASE_ID'; // Replace with your Airtable Base ID
+        const AIRTABLE_API_KEY = 'YOUR_API_KEY'; // Replace with your Airtable API Key
+        const AIRTABLE_TABLE_NAME = 'Members'; // Your table name
+
+        document.getElementById('joinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                "records": [
+                    {
+                        "fields": {
+                            "Name": document.getElementById('name').value,
+                            "Business Name": document.getElementById('businessName').value,
+                            "Email": document.getElementById('email').value,
+                            "Phone": document.getElementById('phone').value,
+                            "Industry": document.getElementById('industry').value,
+                            "Website": document.getElementById('website').value,
+                            "Location": document.getElementById('location').value,
+                            "Description": document.getElementById('description').value,
+                            "Status": "Pending",
+                            "Slug": document.getElementById('businessName').value.toLowerCase().replace(/\s+/g, '-') + '-' + document.getElementById('name').value.toLowerCase().replace(/\s+/g, '-')
+                        }
+                    }
+                ]
+            };
+
+            try {
+                await axios.post(
+                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`,
+                    formData,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                // Show success message
+                document.getElementById('joinForm').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('There was an error submitting your application. Please try again or contact info@covenetwork.co.uk');
+            }
+        });
+    </script>
+</body>
+</html>
