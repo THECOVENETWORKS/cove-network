@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COVE Member Profile</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">COVE Network</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="directory.html">Directory</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="join.html" class="cta-btn">Join COVE</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Profile Section -->
+    <section class="profile-section">
+        <div class="container">
+            <a href="directory.html" class="back-link">← Back to Directory</a>
+            
+            <div class="profile-card" id="profileCard">
+                <!-- Profile will be loaded here by JavaScript -->
+            </div>
+
+            <div class="profile-actions">
+                <h3>Share this profile</h3>
+                <div class="share-buttons">
+                    <button class="btn btn-secondary" onclick="copyToClipboard()">📋 Copy Profile Link</button>
+                    <button class="btn btn-secondary" onclick="shareProfile('email')">📧 Share via Email</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 COVE Network. All rights reserved.</p>
+            <p>A community for business owners. By business owners. Built on trust.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        const AIRTABLE_BASE_ID = 'YOUR_BASE_ID'; // Replace with your Airtable Base ID
+        const AIRTABLE_API_KEY = 'YOUR_API_KEY'; // Replace with your Airtable API Key
+        const AIRTABLE_TABLE_NAME = 'Members'; // Your table name
+
+        async function loadProfile() {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('slug');
+
+            if (!slug) {
+                document.getElementById('profileCard').innerHTML = '<p>Member not found.</p>';
+                return;
+            }
+
+            try {
+                const response = await axios.get(
+                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const member = response.data.records.find(record => 
+                    record.fields.Slug === slug && record.fields.Status === 'Approved'
+                );
+
+                if (!member) {
+                    document.getElementById('profileCard').innerHTML = '<p>Member not found.</p>';
+                    return;
+                }
+
+                const fields = member.fields;
+                const profileHTML = `
+                    <div class="profile-header">
+                        <h1>${fields['Business Name'] || ''}</h1>
+                        <p class="profile-person">${fields.Name || ''}</p>
+                        <p class="profile-industry"><strong>${fields.Industry || ''}</strong></p>
+                    </div>
+
+                    <div class="profile-content">
+                        <div class="profile-main">
+                            <h3>About</h3>
+                            <p>${fields.Description || 'No description provided.'}</p>
+
+                            ${fields.Location ? `
+                                <h3>Location</h3>
+                                <p>📍 ${fields.Location}</p>
+                            ` : ''}
+                        </div>
+
+                        <div class="profile-sidebar">
+                            <h3>Contact & Links</h3>
+                            <div class="contact-links">
+                                ${fields.Phone ? `
+                                    <a href="tel:${fields.Phone}" class="contact-link">
+                                        📞 ${fields.Phone}
+                                    </a>
+                                ` : ''}
+                                ${fields.Email ? `
+                                    <a href="mailto:${fields.Email}" class="contact-link">
+                                        📧 ${fields.Email}
+                                    </a>
+                                ` : ''}
+                                ${fields.Website ? `
+                                    <a href="${fields.Website}" target="_blank" class="contact-link">
+                                        🌐 Website
+                                    </a>
+                                ` : ''}
+                                ${fields['Social Links'] ? `
+                                    <a href="${fields['Social Links']}" target="_blank" class="contact-link">
+                                        🔗 Social
+                                    </a>
+                                ` : ''}
+                            </div>
+
+                            <div class="member-badge">
+                                <p>✓ COVE Member</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('profileCard').innerHTML = profileHTML;
+
+                // Update page title and metadata
+                document.title = `${fields['Business Name']} - COVE Network`;
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                document.getElementById('profileCard').innerHTML = '<p>Error loading profile. Please try again.</p>';
+            }
+        }
+
+        function copyToClipboard() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Profile link copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy link');
+            });
+        }
+
+        function shareProfile(method) {
+            const url = window.location.href;
+            const text = 'Check out my COVE Network profile';
+
+            if (method === 'email') {
+                window.location.href = `mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(url)}`;
+            }
+        }
+
+        // Load profile on page load
+        document.addEventListener('DOMContentLoaded', loadProfile);
+    </script>
+</body>
+</html>
